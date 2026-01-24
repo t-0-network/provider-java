@@ -1,0 +1,320 @@
+syntax = "proto3";
+
+package tzero.v1.payment;
+
+option java_multiple_files = true;
+option java_package = "network.t0.sdk.proto.tzero.v1.payment";
+
+import "tzero/v1/common/payment_method.proto";
+import "tzero/v1/common/payment_receipt.proto";
+import "tzero/v1/common/common.proto";
+import "ivms101/v1/ivms/ivms101.proto";
+import "google/protobuf/timestamp.proto";
+
+/**
+ * This service must be implemented by the provider.
+ *
+ * All methods of this service must be idempotent, meaning they are safe to retry and multiple calls with the same parameters must not have additional effect.
+ */
+service ProviderService {
+
+  /**
+    * Network instructs the provider to execute a payout to the recipient.
+    * This method should be idempotent.
+   */
+  rpc PayOut(PayoutRequest) returns (PayoutResponse) {
+    option idempotency_level = IDEMPOTENT;
+  };
+
+  /**
+    * Network provides an update on the status of a payment.
+    * This method should be idempotent.
+   */
+  rpc UpdatePayment(UpdatePaymentRequest) returns (UpdatePaymentResponse) {
+    option idempotency_level = IDEMPOTENT;
+  };
+
+  /**
+   * This rpc is used to notify the provider about the changes in credit limit and/or credit usage.
+   */
+  rpc UpdateLimit(UpdateLimitRequest) returns (UpdateLimitResponse) {
+    option idempotency_level = IDEMPOTENT;
+  };
+
+  /**
+    * Network can send all the updates about ledger entries of the provider's accounts.
+   */
+  rpc AppendLedgerEntries(AppendLedgerEntriesRequest) returns (AppendLedgerEntriesResponse) {
+    option idempotency_level = IDEMPOTENT;
+  };
+
+  /**
+    * Pay-in provider approves the final pay-out quotes.
+    * This is the "Last Look" endpoint.
+  */
+  rpc ApprovePaymentQuotes(ApprovePaymentQuoteRequest) returns (ApprovePaymentQuoteResponse) {
+    option idempotency_level = IDEMPOTENT;
+  };
+}
+
+message AppendLedgerEntriesRequest {
+  /**
+    * This is a list of transactions that were appended to the ledger of the provider.
+   */
+  repeated Transaction transactions = 20;
+
+  message Transaction {
+    /**
+      * transaction_id is an incrementally growing identifier for the transaction.
+     */
+    uint64 transaction_id = 10;
+    /**
+      * entries is a list of ledger entries.
+      */
+    repeated LedgerEntry entries = 30;
+
+    /**
+     * transaction_details contains details about the transaction.
+     */
+    oneof transaction_details {
+      Payout payout = 130;
+      ProviderSettlement provider_settlement = 140;
+      FeeSettlement fee_settlement = 150;
+    };
+
+    message Payout {
+      uint64 payment_id = 10;
+    }
+
+    message ProviderSettlement {
+      uint64 settlement_id = 10;
+    }
+
+    message FeeSettlement {
+      uint64 fee_settlement_id = 10;
+    }
+  }
+
+  message LedgerEntry {
+    /* 1 is network account, others are ids of participants */
+    uint32 account_owner_id = 10;
+    /**
+     * account_type is the type of the account.
+     */
+    AccountType account_type = 20;
+    /**
+     * debit is the amount that was debited from the account.
+     */
+    tzero.v1.common.Decimal debit = 40;
+    /**
+     * credit is the amount that was credited to the account.
+     */
+    tzero.v1.common.Decimal credit = 50;
+  }
+
+  enum AccountType {
+    ACCOUNT_TYPE_UNSPECIFIED = 0;
+    ACCOUNT_TYPE_BALANCE = 20;
+    ACCOUNT_TYPE_PAY_IN = 40;
+    ACCOUNT_TYPE_PAY_OUT = 50;
+    ACCOUNT_TYPE_FEE_EXPENSE = 60;
+    ACCOUNT_TYPE_SETTLEMENT_IN = 80;
+    ACCOUNT_TYPE_SETTLEMENT_OUT = 90;
+  }
+}
+
+message AppendLedgerEntriesResponse {}
+
+message PayoutRequest {
+  /**
+   * payment id assigned by the network
+   */
+  uint64 payment_id = 10;
+  /**
+   * payout id assigned by the network
+   */
+  uint64 payout_id = 20;
+  /**
+   * currency of the payout
+   */
+  string currency = 30;
+  /**
+   * client quote id of the quote used for this payout
+   */
+  string client_quote_id = 40;
+  /**
+   * amount in currency of the payout
+   */
+  tzero.v1.common.Decimal amount = 50;
+
+  /**
+   * payout_method is the payment method for the payout
+   */
+  optional tzero.v1.common.PaymentDetails payout_details = 60;
+
+  /**
+   * Pay-in provider id which initiated the pay out.
+   */
+  uint32 pay_in_provider_id = 80;
+
+  optional TravelRuleData travel_rule_data = 200;
+
+  message TravelRuleData {
+    // the natural or legal person that requests payment
+    repeated ivms101.Person originator = 10;
+
+    // the natural or legal person who is the receiver
+    repeated ivms101.Person beneficiary = 20;
+
+    optional ivms101.Person originator_provider = 30;
+  }
+}
+
+message PayoutResponse {
+  oneof result {
+    /**
+     * Accepted response - means the payout was accepted.
+     */
+    Accepted accepted = 20;
+    /**
+     * Failure response - means the payout was not executed.
+     */
+    Failed failed = 30;
+
+    /**
+     * Manual AML check required.
+     */
+    ManualAmlCheck manual_aml_check = 40;
+  }
+
+  message Accepted {}
+
+  message ManualAmlCheck {}
+
+  message Failed {
+    Reason reason = 10;
+
+    enum Reason {
+      REASON_UNSPECIFIED = 0;
+    }
+  }
+}
+
+message UpdatePaymentRequest {
+  /**
+   * payment_id is a payment id in the T-0 network.
+   */
+  uint64 payment_id = 5;
+  /**
+   * payment_client_id is a payment id assigned by the client.
+   */
+  string payment_client_id = 10;
+
+  oneof result {
+    /**
+     * Accepted response - means the payout was accepted.
+     */
+    Accepted accepted = 20;
+
+    /**
+    * Payment failed and would not be retried.
+     */
+    Failed failed = 30;
+
+    /**
+     * Confirmed response - final state meaning the payout was executed successfully.
+     */
+    Confirmed confirmed = 40;
+
+    /*
+     * Manual AML check required.
+     */
+    ManualAmlCheck manual_aml_check = 50;
+  }
+
+  message Accepted {
+    tzero.v1.common.Decimal payout_amount = 10; // amount in currency of the payout
+
+    optional TravelRuleData travel_rule_data = 20;
+
+    message TravelRuleData {
+      optional ivms101.Person beneficiary_provider = 10;
+    }
+  }
+
+  message Failed {
+    Reason reason = 10;
+
+    enum Reason {
+      REASON_UNSPECIFIED = 0;
+    }
+  }
+
+  message Confirmed {
+    google.protobuf.Timestamp paid_out_at = 10; // time of the payout
+
+    /**
+    * Payment receipt might contain metadata.
+    */
+    tzero.v1.common.PaymentReceipt receipt = 20;
+  }
+
+  message ManualAmlCheck {
+
+  }
+}
+message UpdatePaymentResponse {}
+
+/* All the amounts are in USD */
+message UpdateLimitRequest {
+  /**
+   * can contain one or more Limit messages.
+   */
+  repeated Limit limits = 10;
+
+  message Limit {
+    /**
+       * Incrementally growing for the provider.
+       */
+    int64 version = 10;
+    /**
+     * the Id of the counterparty provider.
+     */
+    int32 counterpart_id = 15;
+    /**
+     * payout_limit = credit_limit - credit_usage
+     */
+    tzero.v1.common.Decimal payout_limit = 20;
+    /**
+     * This is the credit limit that the counterparty is willing to extend.
+     */
+    tzero.v1.common.Decimal credit_limit = 30;
+    /**
+     * This is the credit usage that the provider has used so far.
+     */
+    tzero.v1.common.Decimal credit_usage = 40;
+  }
+}
+
+/**
+ * Empty message - means no response is needed.
+ */
+message UpdateLimitResponse {}
+
+message ApprovePaymentQuoteRequest {
+  uint64 payment_id = 10;
+
+  int64 pay_out_quote_id = 20;
+  tzero.v1.common.Decimal pay_out_rate = 30;
+  tzero.v1.common.Decimal pay_out_amount = 40;
+  tzero.v1.common.Decimal settlement_amount = 50;
+}
+
+message ApprovePaymentQuoteResponse {
+  oneof result {
+    Accepted accepted = 10;
+    Rejected rejected = 20;
+  }
+  message Accepted {}
+  message Rejected {}
+}

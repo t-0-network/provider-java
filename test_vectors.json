@@ -1,0 +1,52 @@
+{
+  "crypto": {
+    "private_key_hex": "6b30303de7b26bfb1222b317a52113357f8bb06de00160b4261a2fef9c8b9bd8",
+    "public_key_hex": "044fa1465c087aaf42e5ff707050b8f77d2ce92129c5f300686bdd3adfffe44567713bb7931632837c5268a832512e75599b6964f4484c9531c02e96d90384d9f0",
+    "message": "please sign me!",
+    "message_hex": "706c65617365207369676e206d6521",
+    "keccak256_hash": "46d5cbf7d8477720c337b94a2fe332fe54205914619e7e4889595c3c944b646b",
+    "signature": "63a4f742ac8b900bdd290e609fb45d99e9adcb09c86e1a28e090cc2b8ba9ef7536c8692e3eb1449e53f1b3478dff4bc01094b862c68f66abc239b145d8e5832900",
+    "signature_r": "63a4f742ac8b900bdd290e609fb45d99e9adcb09c86e1a28e090cc2b8ba9ef75",
+    "signature_s": "36c8692e3eb1449e53f1b3478dff4bc01094b862c68f66abc239b145d8e58329",
+    "signature_v": 0
+  },
+  "request_signing": {
+    "body_hex": "74657374207265717565737420626f6479",
+    "body_string": "test request body",
+    "timestamp_ms": 1706000000000,
+    "timestamp_bytes_hex": "002486358d010000",
+    "combined_bytes_hex": "74657374207265717565737420626f6479002486358d010000",
+    "combined_hash": "49a567a359bf25d9652b24acc5567bc38c93139467c8fcf798f059ada585697e",
+    "signature": "dc7cede55d344fb59f10fa71b4915968a9d5c3f811faf7ddd834feb3cdce106539cd605b5a2d5fe35c21f27af92d01a68a06d6e813a613dac40e90a7a7a8918101"
+  },
+  "timestamp_tests": [
+    {
+      "timestamp_ms": 0,
+      "timestamp_bytes_hex": "0000000000000000"
+    },
+    {
+      "timestamp_ms": 1,
+      "timestamp_bytes_hex": "0100000000000000"
+    },
+    {
+      "timestamp_ms": 255,
+      "timestamp_bytes_hex": "ff00000000000000"
+    },
+    {
+      "timestamp_ms": 256,
+      "timestamp_bytes_hex": "0001000000000000"
+    },
+    {
+      "timestamp_ms": 1000,
+      "timestamp_bytes_hex": "e803000000000000"
+    },
+    {
+      "timestamp_ms": 1706000000000,
+      "timestamp_bytes_hex": "002486358d010000"
+    },
+    {
+      "timestamp_ms": 9223372036854775807,
+      "timestamp_bytes_hex": "ffffffffffffff7f"
+    }
+  ]
+}

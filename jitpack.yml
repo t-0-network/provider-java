@@ -1,0 +1,15 @@
+# JitPack build configuration
+# https://docs.jitpack.io/building/
+
+jdk:
+  - openjdk17
+
+before_install:
+  - chmod +x gradlew
+
+install:
+  # Build and publish to local maven repo for JitPack to pick up
+  - ./gradlew :sdk:publishToMavenLocal :cli:publishToMavenLocal --no-daemon
+
+env:
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false"

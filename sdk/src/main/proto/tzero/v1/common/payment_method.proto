@@ -1,0 +1,231 @@
+syntax = "proto3";
+
+package tzero.v1.common;
+
+option java_multiple_files = true;
+option java_package = "network.t0.sdk.proto.tzero.v1.common";
+
+import "tzero/v1/common/common.proto";
+
+enum PaymentMethodType {
+  PAYMENT_METHOD_TYPE_UNSPECIFIED = 0;
+  PAYMENT_METHOD_TYPE_SEPA = 10;
+  PAYMENT_METHOD_TYPE_SWIFT = 20;
+  PAYMENT_METHOD_TYPE_CARD = 30; // only pay in
+  PAYMENT_METHOD_TYPE_STABLECOIN = 40; // only pay out
+  PAYMENT_METHOD_TYPE_ACH = 50;
+  PAYMENT_METHOD_TYPE_WIRE = 60;
+  PAYMENT_METHOD_TYPE_FPS = 70;
+  PAYMENT_METHOD_TYPE_M_PESA = 80;
+  PAYMENT_METHOD_TYPE_G_CASH = 90;
+  PAYMENT_METHOD_TYPE_INDIAN_BANK_TRANSFER = 100;
+  PAYMENT_METHOD_TYPE_PESONET = 110;
+  PAYMENT_METHOD_TYPE_INSTAPAY = 120;
+  // Pakistan domestic bank transfer via IBAN
+  PAYMENT_METHOD_TYPE_PAKISTAN_BANK_TRANSFER = 130;
+  // Pakistan mobile wallet (JazzCash, Easypaisa, etc.) - sometimes also called ID Wallet
+  PAYMENT_METHOD_TYPE_PAKISTAN_MOBILE_WALLET = 140;
+  // PIX - Brazilian instant payment system
+  PAYMENT_METHOD_TYPE_PIX = 150;
+}
+
+message PaymentDetails {
+  oneof details {
+    // SEPA (Single Euro Payments Area) - Euro bank transfers across European countries
+    Sepa sepa = 10;
+
+    //SWIFT (Society for Worldwide Interbank Financial Telecommunication) - International wire transfers
+    // Global (200+ countries)
+    Swift swift = 30;
+
+    // Stablecoin - Cryptocurrency transfers pegged to fiat currencies
+    // Global
+    Stablecoin stablecoin = 40;
+
+    // ACH (Automated Clearing House) - Electronic bank-to-bank transfers
+    // United States
+    Ach ach = 50;
+
+    // Wire - Domestic electronic funds transfer
+    // United States
+    Wire wire = 60;
+
+    // FPS (Faster Payments Service)
+    // United Kingdom
+    Fps fps = 70;
+
+    // M-Pesa - Mobile money transfer and payment service
+    // Kenya, Tanzania, Mozambique, DRC, Lesotho, Ghana, Egypt, South Africa
+    MPesa mpesa = 80;
+
+    // GCash - Mobile wallet and payment platform
+    // Philippines
+    GCash gcash = 90;
+
+    // Indian Bank Transfer - Domestic electronic funds transfer (IMPS/NEFT/RTGS)
+    // India
+    IndianBankTransfer  indian_bank_transfer = 100;
+
+    // PESONet - Real-time domestic payments system
+    // Philippines
+    Pesonet pesonet = 110;
+
+    // Instapay - Real-time domestic payments system
+    // Philippines
+    Instapay instapay = 120;
+
+    // Pakistan Bank Transfer - Domestic bank transfers using Pakistani IBAN
+    // Pakistan
+    PakistanBankTransfer pakistan_bank_transfer = 130;
+
+    // Pakistan Mobile Wallet - JazzCash, Easypaisa, SadaPay, NayaPay and other wallets
+    // Pakistan
+    PakistanMobileWallet pakistan_mobile_wallet = 140;
+
+    // PIX - Brazilian instant payment system
+    // Brazil
+    Pix pix = 150;
+  };
+
+  message Sepa {
+    string iban = 20;
+    string beneficiary_name = 30;
+    string payment_reference = 40;
+  }
+
+  message Fps {
+    string sort_code = 10;
+    string account_number = 20;
+    string beneficiary_name = 30;
+    string reference = 40;
+  }
+
+  message MPesa {
+    string beneficiary_phone = 10;
+    string account_reference = 20;
+  }
+
+  message GCash {
+    string beneficiary_name = 10;
+    string beneficiary_phone = 20;
+    string payment_reference = 30;
+  }
+
+  message IndianBankTransfer {
+
+    oneof method {
+      // 1) ACCOUNT + IFSC (NEFT/RTGS/IMPS P2A)
+      AccountIFSC account_ifsc = 10;
+
+      // 2) IMPS P2P (MOBILE + MMID)
+      IMPS imps = 20;
+    }
+
+    message AccountIFSC {
+      string account_number = 10;
+      string ifsc = 20;
+    }
+
+    message IMPS {
+      string beneficiary_phone = 10;
+      string mmid = 20;
+    }
+
+    string beneficiary_name = 30;
+    string beneficiary_type = 40;
+    string payment_reference = 50;
+  }
+
+  message Swift {
+    string swift_code = 10;
+    string account_number = 20;
+    string beneficiary_name = 30;
+    string beneficiary_address = 40;
+    string payment_reference = 50;
+  }
+
+  message Stablecoin {
+    tzero.v1.common.Blockchain blockchain = 10;
+    tzero.v1.common.Stablecoin stablecoin = 20;
+    string address = 30;
+  }
+
+  message Ach {
+    string routing_number = 10;
+    string account_number = 20;
+    string account_holder_name = 30;
+    AchAccountType account_type = 40;
+
+    enum AchAccountType {
+      ACH_ACCOUNT_TYPE_UNSPECIFIED = 0;
+      ACH_ACCOUNT_TYPE_CHECKING = 10;
+      ACH_ACCOUNT_TYPE_SAVINGS = 20;
+    }
+  }
+
+  message Wire {
+    string bank_name = 10;
+    string bank_address = 20;
+    string swift_code = 30;
+    string account_number = 40;
+    string beneficiary_name = 50;
+    string beneficiary_address = 60;
+    string wire_reference = 70;
+  }
+
+  message Pesonet {
+    string recipient_financial_institution = 10;
+    string recipient_identifier = 20;
+    string recipient_account_name = 30;
+    optional string purpose_of_transfer = 40;
+    optional string recipient_address_email = 50;
+  }
+
+  message Instapay {
+    string recipient_institution = 10;
+    string recipient_identifier = 20;
+    string recipient_account_name = 30;
+    optional string purpose_of_transfer = 40;
+  }
+
+  message PakistanBankTransfer {
+    string iban = 10;
+    string beneficiary_name = 20;
+    optional string beneficiary_cnic = 25;
+    string payment_reference = 30;
+  }
+
+  message PakistanMobileWallet {
+    PakistanWalletProvider wallet_provider = 10;
+    string mobile_number = 20;
+    string cnic = 30;
+    string beneficiary_name = 40;
+    optional string payment_reference = 50;
+
+    enum PakistanWalletProvider {
+      PAKISTAN_WALLET_PROVIDER_UNSPECIFIED = 0;
+      PAKISTAN_WALLET_PROVIDER_JAZZCASH = 10;
+      PAKISTAN_WALLET_PROVIDER_EASYPAISA = 20;
+      PAKISTAN_WALLET_PROVIDER_SADAPAY = 30;
+      PAKISTAN_WALLET_PROVIDER_NAYAPAY = 40;
+      PAKISTAN_WALLET_PROVIDER_OTHER = 100;
+    }
+  }
+
+  message Pix {
+    KeyType key_type = 10;
+    string key_value = 20;
+    string beneficiary_name = 30;
+    optional string beneficiary_tax_id = 40;
+    optional string payment_reference = 50;
+
+    enum KeyType {
+      KEY_TYPE_UNSPECIFIED = 0;
+      KEY_TYPE_CPF = 10;
+      KEY_TYPE_CNPJ = 20;
+      KEY_TYPE_EMAIL = 30;
+      KEY_TYPE_PHONE = 40;
+      KEY_TYPE_EVP = 50;
+    }
+  }
+}

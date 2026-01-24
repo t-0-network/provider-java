@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package tzero.v1.common;
+
+option java_multiple_files = true;
+option java_package = "network.t0.sdk.proto.tzero.v1.common";
+
+message PaymentReceipt {
+  oneof details {
+    Sepa sepa = 10;
+    Swift swift = 30;
+    Stablecoin stablecoin = 40;
+  };
+
+  message Sepa {
+  }
+
+  message Swift {
+  }
+
+  message Stablecoin {
+    string transaction_hash = 10; // on-chain hex encoded transaction hash
+  }
+}

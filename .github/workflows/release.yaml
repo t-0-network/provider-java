@@ -1,0 +1,112 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 1.0.0)'
+        required: true
+        type: string
+      next_version:
+        description: 'Next development version (e.g., 1.0.1-SNAPSHOT)'
+        required: true
+        type: string
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Validate version format
+        run: |
+          if [[ ! "${{ inputs.version }}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Error: Version must be in format X.Y.Z"
+            exit 1
+          fi
+          if [[ ! "${{ inputs.next_version }}" =~ ^[0-9]+\.[0-9]+\.[0-9]+-SNAPSHOT$ ]]; then
+            echo "Error: Next version must be in format X.Y.Z-SNAPSHOT"
+            exit 1
+          fi
+
+      - name: Generate GitHub App Token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.CI_APP_ID }}
+          private-key: ${{ secrets.CI_APP_PRIVATE_KEY }}
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Update version for release
+        run: |
+          sed -i "s/^version=.*/version=${{ inputs.version }}/" gradle.properties
+          echo "Updated gradle.properties to version ${{ inputs.version }}"
+          cat gradle.properties
+
+      - name: Build release
+        run: ./gradlew build --no-daemon
+
+      - name: Commit release version
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: release v${{ inputs.version }}"
+          file_pattern: gradle.properties
+          tagging_message: "v${{ inputs.version }}"
+
+      - name: Generate changelog
+        run: |
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          if [ -z "$PREV_TAG" ]; then
+            git log --pretty=format:"- %s (%h)" --no-merges > changelog.txt
+          else
+            git log ${PREV_TAG}..HEAD --pretty=format:"- %s (%h)" --no-merges > changelog.txt
+          fi
+          echo "Changelog:"
+          cat changelog.txt
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ inputs.version }}
+          name: v${{ inputs.version }}
+          body_path: changelog.txt
+          files: |
+            sdk/build/libs/provider-sdk-java-${{ inputs.version }}.jar
+            cli/build/libs/provider-init-${{ inputs.version }}.jar
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Update to next development version
+        run: |
+          sed -i "s/^version=.*/version=${{ inputs.next_version }}/" gradle.properties
+          echo "Updated gradle.properties to version ${{ inputs.next_version }}"
+          cat gradle.properties
+
+      - name: Commit next development version
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: prepare for next development iteration (${{ inputs.next_version }})"
+          file_pattern: gradle.properties
