@@ -1,6 +1,6 @@
 plugins {
     java
-    id("org.jreleaser") version "1.18.0"
+    id("org.jreleaser") version "1.22.0"
 }
 
 allprojects {
@@ -51,6 +51,7 @@ jreleaser {
                     active = org.jreleaser.model.Active.ALWAYS
                     url = "https://central.sonatype.com/api/v1/publisher"
                     sign = false
+                    skipPublicationCheck = true
                     stagingRepository("sdk/build/staging-deploy")
                     stagingRepository("cli/build/staging-deploy")
                 }

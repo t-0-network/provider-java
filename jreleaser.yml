@@ -1,9 +1,0 @@
-# JReleaser configuration overrides
-# Main config is in build.gradle.kts, this file provides additional settings
-
-deploy:
-  maven:
-    mavenCentral:
-      sonatype:
-        # Skip waiting for publication - we verify in a separate CI job
-        skipPublicationCheck: true
