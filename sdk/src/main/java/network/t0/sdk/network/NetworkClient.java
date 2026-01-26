@@ -398,7 +398,7 @@ public abstract class NetworkClient implements Closeable {
                             Metadata.Key.of(Headers.SIGNATURE_TIMESTAMP, Metadata.ASCII_STRING_MARSHALLER),
                             String.valueOf(timestampMs));
 
-                    log.debug("Signed request: timestamp={}, signature={}", timestampMs, signResult.getSignatureHex());
+                    log.trace("Signed request: timestamp={}, signature={}", timestampMs, signResult.getSignatureHex());
                 }
             };
         }

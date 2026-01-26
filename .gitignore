@@ -20,4 +20,5 @@ out/
 local.properties
 
 # Signing keys
-.signing-key.gpg
+.signing-key.*
+.env
