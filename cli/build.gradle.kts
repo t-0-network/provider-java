@@ -78,6 +78,7 @@ tasks.build {
 
 // Publishing configuration
 java {
+    withJavadocJar()
     withSourcesJar()
 }
 
@@ -89,6 +90,7 @@ publishing {
             // Use shadow JAR as the main artifact
             artifact(tasks.shadowJar)
             artifact(tasks.named("sourcesJar"))
+            artifact(tasks.named("javadocJar"))
 
             pom {
                 name.set("T-0 Provider Init CLI")
@@ -121,15 +123,8 @@ publishing {
 
     repositories {
         maven {
-            name = "OSSRH"
-            val releasesUrl = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
-            val snapshotsUrl = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
-            url = if (version.toString().endsWith("SNAPSHOT")) snapshotsUrl else releasesUrl
-
-            credentials {
-                username = System.getenv("OSSRH_USERNAME") ?: ""
-                password = System.getenv("OSSRH_PASSWORD") ?: ""
-            }
+            name = "staging"
+            url = uri(layout.buildDirectory.dir("staging-deploy"))
         }
     }
 }

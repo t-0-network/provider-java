@@ -16,6 +16,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Set up JDK 17
         uses: useblacksmith/setup-java@v5
@@ -43,24 +45,17 @@ jobs:
           secrets: |-
             gpg_key:tzero-network/gpg-prod
 
-      - name: Import GPG key
-        uses: crazy-max/ghaction-import-gpg@v6
-        with:
-          gpg_private_key: ${{ steps.secrets.outputs.gpg_key }}
-
       - name: Build
         run: ./gradlew build --no-daemon
 
-      - name: Publish SDK to Maven Central
-        run: ./gradlew :sdk:publishMavenJavaPublicationToOSSRHRepository --no-daemon
+      - name: Stage artifacts
+        run: ./gradlew :sdk:publishMavenJavaPublicationToStagingRepository :cli:publishMavenPublicationToStagingRepository --no-daemon
         env:
-          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
           GPG_PRIVATE_KEY: ${{ steps.secrets.outputs.gpg_key }}
 
-      - name: Publish CLI to Maven Central
-        run: ./gradlew :cli:publishMavenPublicationToOSSRHRepository --no-daemon
+      - name: Deploy to Maven Central
+        run: ./gradlew jreleaserDeploy --no-daemon
         env:
-          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-          OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
-          GPG_PRIVATE_KEY: ${{ steps.secrets.outputs.gpg_key }}
+          JRELEASER_MAVENCENTRAL_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          JRELEASER_MAVENCENTRAL_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+          JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

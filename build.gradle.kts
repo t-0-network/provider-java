@@ -1,5 +1,6 @@
 plugins {
     java
+    id("org.jreleaser") version "1.18.0"
 }
 
 allprojects {
@@ -22,5 +23,38 @@ subprojects {
 
     tasks.withType<Test> {
         useJUnitPlatform()
+    }
+}
+
+jreleaser {
+    project {
+        name.set("provider-sdk-java")
+        description.set("Java SDK for T-0 Network providers")
+        copyright.set("T-0 Network")
+    }
+    release {
+        github {
+            skipRelease.set(true)
+            skipTag.set(true)
+            changelog {
+                enabled.set(false)
+            }
+        }
+    }
+    signing {
+        active.set(org.jreleaser.model.Active.NEVER)
+    }
+    deploy {
+        maven {
+            mavenCentral {
+                create("sonatype") {
+                    active.set(org.jreleaser.model.Active.ALWAYS)
+                    url.set("https://central.sonatype.com/api/v1/publisher")
+                    sign.set(false)
+                    stagingRepository("sdk/build/staging-deploy")
+                    stagingRepository("cli/build/staging-deploy")
+                }
+            }
+        }
     }
 }
