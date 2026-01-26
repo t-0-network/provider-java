@@ -70,8 +70,6 @@ jobs:
           JRELEASER_MAVENCENTRAL_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           JRELEASER_MAVENCENTRAL_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
           JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Skip publication verification - we'll do it in a separate cheap job
-          JRELEASER_DEPLOY_MAVEN_MAVENCENTRAL_SONATYPE_SKIP_PUBLICATION_CHECK: true
 
   verify:
     name: Verify Publication
