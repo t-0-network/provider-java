@@ -60,35 +60,9 @@ jobs:
         run: |
           ./gradlew jreleaserDeploy --no-daemon
 
-          # Find and display JReleaser output
-          echo "Looking for JReleaser output files..."
-          find build -name "*.properties" -o -name "output*" 2>/dev/null || true
-
-          # Try multiple possible locations for deployment ID
-          DEPLOYMENT_ID=""
-          for props_file in build/jreleaser/output.properties build/jreleaser/trace/output.properties; do
-            if [ -f "$props_file" ]; then
-              echo "Found: $props_file"
-              cat "$props_file"
-              DEPLOYMENT_ID=$(grep -i 'deploymentId' "$props_file" | cut -d'=' -f2 | tr -d ' ' || true)
-              if [ -n "$DEPLOYMENT_ID" ]; then
-                break
-              fi
-            fi
-          done
-
-          # Also try to extract from JReleaser logs
-          if [ -z "$DEPLOYMENT_ID" ]; then
-            echo "Searching JReleaser logs for deployment ID..."
-            DEPLOYMENT_ID=$(find build -name "*.log" -exec grep -h "deploymentId" {} \; 2>/dev/null | head -1 | grep -oE '[0-9a-f-]{36}' || true)
-          fi
-
-          if [ -n "$DEPLOYMENT_ID" ]; then
-            echo "deployment_id=$DEPLOYMENT_ID" >> $GITHUB_OUTPUT
-            echo "Deployment ID: $DEPLOYMENT_ID"
-          else
-            echo "Warning: Could not find deployment ID"
-          fi
+          # Extract deployment ID from JReleaser output
+          DEPLOYMENT_ID=$(grep -i 'deploymentId' build/jreleaser/output.properties | cut -d'=' -f2 | tr -d ' ' || true)
+          echo "deployment_id=$DEPLOYMENT_ID" >> $GITHUB_OUTPUT
         env:
           JRELEASER_MAVENCENTRAL_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           JRELEASER_MAVENCENTRAL_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
