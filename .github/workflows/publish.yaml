@@ -7,11 +7,13 @@ on:
 
 jobs:
   publish:
-    name: Publish to Maven Central
+    name: Build and Upload to Maven Central
     runs-on: blacksmith-4vcpu-ubuntu-2404
     permissions:
       contents: 'read'
       id-token: 'write'
+    outputs:
+      deployment_id: ${{ steps.deploy.outputs.deployment_id }}
 
     steps:
       - name: Checkout
@@ -54,8 +56,70 @@ jobs:
           GPG_PRIVATE_KEY: ${{ steps.secrets.outputs.gpg_key }}
 
       - name: Deploy to Maven Central
-        run: ./gradlew jreleaserDeploy --no-daemon
+        id: deploy
+        run: |
+          ./gradlew jreleaserDeploy --no-daemon
+          # Extract deployment ID from JReleaser output
+          if [ -f build/jreleaser/output.properties ]; then
+            cat build/jreleaser/output.properties
+            DEPLOYMENT_ID=$(grep 'deploymentId=' build/jreleaser/output.properties | cut -d'=' -f2 || true)
+            echo "deployment_id=$DEPLOYMENT_ID" >> $GITHUB_OUTPUT
+            echo "Deployment ID: $DEPLOYMENT_ID"
+          fi
         env:
           JRELEASER_MAVENCENTRAL_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           JRELEASER_MAVENCENTRAL_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
           JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Skip publication verification - we'll do it in a separate cheap job
+          JRELEASER_DEPLOY_MAVEN_MAVENCENTRAL_SONATYPE_SKIP_PUBLICATION_CHECK: true
+
+  verify:
+    name: Verify Publication
+    needs: publish
+    runs-on: blacksmith-2vcpu-ubuntu-2404
+    if: needs.publish.outputs.deployment_id != ''
+
+    steps:
+      - name: Wait for Maven Central publication
+        env:
+          DEPLOYMENT_ID: ${{ needs.publish.outputs.deployment_id }}
+          MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+        run: |
+          echo "Checking publication status for deployment: $DEPLOYMENT_ID"
+
+          # Create auth token (base64 encoded username:password)
+          AUTH_TOKEN=$(echo -n "$MAVEN_USERNAME:$MAVEN_PASSWORD" | base64)
+
+          MAX_ATTEMPTS=60
+          DELAY=30
+
+          for i in $(seq 1 $MAX_ATTEMPTS); do
+            echo "Attempt $i/$MAX_ATTEMPTS..."
+
+            RESPONSE=$(curl -s --request POST \
+              --header "Authorization: Bearer $AUTH_TOKEN" \
+              "https://central.sonatype.com/api/v1/publisher/status?id=$DEPLOYMENT_ID")
+
+            STATE=$(echo "$RESPONSE" | jq -r '.deploymentState // empty')
+
+            echo "Current state: $STATE"
+
+            if [ "$STATE" = "PUBLISHED" ]; then
+              echo "✅ Successfully published to Maven Central!"
+              exit 0
+            elif [ "$STATE" = "FAILED" ]; then
+              echo "❌ Publication failed!"
+              echo "$RESPONSE" | jq
+              exit 1
+            fi
+
+            if [ $i -lt $MAX_ATTEMPTS ]; then
+              echo "Waiting ${DELAY}s before next check..."
+              sleep $DELAY
+            fi
+          done
+
+          echo "⚠️ Timeout waiting for publication. Last state: $STATE"
+          echo "Check status manually at: https://central.sonatype.com/publishing/deployments"
+          exit 1

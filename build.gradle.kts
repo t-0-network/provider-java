@@ -28,29 +28,29 @@ subprojects {
 
 jreleaser {
     project {
-        name.set("provider-java")
-        description.set("Java SDK and CLI for T-0 Network providers")
-        copyright.set("T-0 Network")
+        name = "provider-java"
+        description = "Java SDK and CLI for T-0 Network providers"
+        copyright = "T-0 Network"
     }
     release {
         github {
-            skipRelease.set(true)
-            skipTag.set(true)
+            skipRelease = true
+            skipTag = true
             changelog {
-                enabled.set(false)
+                enabled = false
             }
         }
     }
     signing {
-        active.set(org.jreleaser.model.Active.NEVER)
+        active = org.jreleaser.model.Active.NEVER
     }
     deploy {
         maven {
             mavenCentral {
                 create("sonatype") {
-                    active.set(org.jreleaser.model.Active.ALWAYS)
-                    url.set("https://central.sonatype.com/api/v1/publisher")
-                    sign.set(false)
+                    active = org.jreleaser.model.Active.ALWAYS
+                    url = "https://central.sonatype.com/api/v1/publisher"
+                    sign = false
                     stagingRepository("sdk/build/staging-deploy")
                     stagingRepository("cli/build/staging-deploy")
                 }
