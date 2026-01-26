@@ -54,17 +54,26 @@ jobs:
       - name: Build
         run: ./gradlew build --no-daemon
 
-      - name: Stage artifacts
-        run: ./gradlew :sdk:publishMavenJavaPublicationToStagingRepository :cli:publishMavenPublicationToStagingRepository --no-daemon
+      # === NMCP Publishing (active) ===
+      - name: Publish to Maven Central
+        run: ./gradlew publishAggregationToCentralPortal --no-daemon
         env:
           GPG_PRIVATE_KEY: ${{ steps.secrets.outputs.gpg_key }}
+          MAVEN_CENTRAL_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          MAVEN_CENTRAL_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
 
-      - name: Deploy to Maven Central
-        run: ./gradlew jreleaserDeploy --no-daemon
-        env:
-          JRELEASER_MAVENCENTRAL_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-          JRELEASER_MAVENCENTRAL_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
-          JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # === JReleaser Publishing (disabled - uncomment to re-enable) ===
+      # - name: Stage artifacts
+      #   run: ./gradlew :sdk:publishMavenJavaPublicationToStagingRepository :cli:publishMavenPublicationToStagingRepository --no-daemon
+      #   env:
+      #     GPG_PRIVATE_KEY: ${{ steps.secrets.outputs.gpg_key }}
+      #
+      # - name: Deploy to Maven Central
+      #   run: ./gradlew jreleaserDeploy --no-daemon
+      #   env:
+      #     JRELEASER_MAVENCENTRAL_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+      #     JRELEASER_MAVENCENTRAL_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+      #     JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   verify:
     name: Verify Publication

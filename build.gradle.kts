@@ -1,6 +1,10 @@
+import java.time.Duration
+
 plugins {
     java
-    id("org.jreleaser") version "1.22.0"
+    id("com.gradleup.nmcp.aggregation") version "1.4.4"
+    // JReleaser disabled - using NMCP instead. Re-enable when JReleaser bugs are fixed.
+    // id("org.jreleaser") version "1.22.0"
 }
 
 allprojects {
@@ -26,6 +30,43 @@ subprojects {
     }
 }
 
+nmcpAggregation {
+    centralPortal {
+        username = providers.environmentVariable("MAVEN_CENTRAL_USERNAME")
+        password = providers.environmentVariable("MAVEN_CENTRAL_PASSWORD")
+        publicationName = "T-0 Provider SDK ${project.version}"
+        // Don't wait for validation/publishing - verification is handled by separate CI job
+        validationTimeout = Duration.ZERO
+        publishingTimeout = Duration.ZERO
+    }
+}
+
+dependencies {
+    nmcpAggregation(project(":sdk"))
+    nmcpAggregation(project(":cli"))
+}
+
+// ============================================================================
+// JReleaser Configuration (DISABLED - using NMCP instead)
+// ============================================================================
+// To switch back to JReleaser:
+// 1. In this file (build.gradle.kts):
+//    - Comment out id("com.gradleup.nmcp.aggregation") plugin
+//    - Uncomment id("org.jreleaser") plugin
+//    - Comment out nmcpAggregation { } block and its dependencies { } block
+//    - Uncomment jreleaser { } block below
+// 2. In sdk/build.gradle.kts:
+//    - Comment out id("com.gradleup.nmcp") plugin
+//    - Uncomment the repositories { } block in publishing { }
+// 3. In cli/build.gradle.kts:
+//    - Comment out id("com.gradleup.nmcp") plugin
+//    - Uncomment the repositories { } block in publishing { }
+// 4. In .github/workflows/publish.yaml:
+//    - Comment out NMCP publishing step
+//    - Uncomment JReleaser staging and deploy steps
+// 5. (Optional) Remove NMCP plugins from settings.gradle.kts pluginManagement
+// ============================================================================
+/*
 jreleaser {
     project {
         name = "provider-java"
@@ -59,3 +100,4 @@ jreleaser {
         }
     }
 }
+*/

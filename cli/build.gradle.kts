@@ -3,6 +3,7 @@ plugins {
     id("com.gradleup.shadow") version "9.3.1"
     `maven-publish`
     signing
+    id("com.gradleup.nmcp")
 }
 
 val picocliVersion = "4.7.7"
@@ -121,12 +122,16 @@ publishing {
         }
     }
 
+    // Staging repository for JReleaser (disabled - using NMCP)
+    // Uncomment if switching back to JReleaser
+    /*
     repositories {
         maven {
             name = "staging"
             url = uri(layout.buildDirectory.dir("staging-deploy"))
         }
     }
+    */
 }
 
 signing {

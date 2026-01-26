@@ -6,6 +6,7 @@ plugins {
     id("me.champeau.jmh") version "0.7.3"
     `maven-publish`
     signing
+    id("com.gradleup.nmcp")
 }
 
 val grpcVersion = "1.78.0"
@@ -130,12 +131,16 @@ publishing {
         }
     }
 
+    // Staging repository for JReleaser (disabled - using NMCP)
+    // Uncomment if switching back to JReleaser
+    /*
     repositories {
         maven {
             name = "staging"
             url = uri(layout.buildDirectory.dir("staging-deploy"))
         }
     }
+    */
 }
 
 signing {
