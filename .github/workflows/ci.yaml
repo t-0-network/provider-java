@@ -26,7 +26,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Setup Gradle
-        uses: useblacksmith/setup-gradle@v5
+        uses: useblacksmith/setup-gradle/setup-gradle@v5
         with:
           cache-read-only: ${{ github.ref != 'refs/heads/master' }}
 
