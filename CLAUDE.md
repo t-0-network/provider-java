@@ -65,3 +65,9 @@ verifySignature(rawBytes, signature); // Verify against original bytes
 
 - Java 17+
 - Follow existing code patterns in the codebase
+
+## Git Workflow
+
+- **NEVER commit or push without explicit user request**
+- Always run builds/tests locally to identify problems before suggesting commits
+- Do not commit debug changes - fix issues locally first
