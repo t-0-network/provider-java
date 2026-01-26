@@ -13,7 +13,7 @@ jobs:
       contents: 'read'
       id-token: 'write'
     outputs:
-      deployment_id: ${{ steps.deploy.outputs.deployment_id }}
+      version: ${{ steps.version.outputs.version }}
 
     steps:
       - name: Checkout
@@ -47,6 +47,10 @@ jobs:
           secrets: |-
             gpg_key:tzero-network/gpg-prod
 
+      - name: Get version from tag
+        id: version
+        run: echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
       - name: Build
         run: ./gradlew build --no-daemon
 
@@ -56,13 +60,7 @@ jobs:
           GPG_PRIVATE_KEY: ${{ steps.secrets.outputs.gpg_key }}
 
       - name: Deploy to Maven Central
-        id: deploy
-        run: |
-          ./gradlew jreleaserDeploy --no-daemon
-
-          # Extract deployment ID from JReleaser output
-          DEPLOYMENT_ID=$(grep -i 'deploymentId' build/jreleaser/output.properties | cut -d'=' -f2 | tr -d ' ' || true)
-          echo "deployment_id=$DEPLOYMENT_ID" >> $GITHUB_OUTPUT
+        run: ./gradlew jreleaserDeploy --no-daemon
         env:
           JRELEASER_MAVENCENTRAL_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           JRELEASER_MAVENCENTRAL_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
@@ -72,49 +70,32 @@ jobs:
     name: Verify Publication
     needs: publish
     runs-on: blacksmith-2vcpu-ubuntu-2404
-    if: needs.publish.outputs.deployment_id != ''
 
     steps:
-      - name: Wait for Maven Central publication
+      - name: Wait for Maven Central availability
         env:
-          DEPLOYMENT_ID: ${{ needs.publish.outputs.deployment_id }}
-          MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-          MAVEN_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+          VERSION: ${{ needs.publish.outputs.version }}
         run: |
-          echo "Checking publication status for deployment: $DEPLOYMENT_ID"
-
-          # Create auth token (base64 encoded username:password)
-          AUTH_TOKEN=$(echo -n "$MAVEN_USERNAME:$MAVEN_PASSWORD" | base64)
+          echo "Checking Maven Central for version: $VERSION"
 
           MAX_ATTEMPTS=60
           DELAY=30
+          URL="https://repo1.maven.org/maven2/network/t-0/provider-sdk-java/${VERSION}/provider-sdk-java-${VERSION}.pom"
 
           for i in $(seq 1 $MAX_ATTEMPTS); do
-            echo "Attempt $i/$MAX_ATTEMPTS..."
+            echo "Attempt $i/$MAX_ATTEMPTS - checking $URL"
 
-            RESPONSE=$(curl -s --request POST \
-              --header "Authorization: Bearer $AUTH_TOKEN" \
-              "https://central.sonatype.com/api/v1/publisher/status?id=$DEPLOYMENT_ID")
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
 
-            STATE=$(echo "$RESPONSE" | jq -r '.deploymentState // empty')
-
-            echo "Current state: $STATE"
-
-            if [ "$STATE" = "PUBLISHED" ]; then
-              echo "✅ Successfully published to Maven Central!"
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "Published to Maven Central!"
               exit 0
-            elif [ "$STATE" = "FAILED" ]; then
-              echo "❌ Publication failed!"
-              echo "$RESPONSE" | jq
-              exit 1
             fi
 
-            if [ $i -lt $MAX_ATTEMPTS ]; then
-              echo "Waiting ${DELAY}s before next check..."
-              sleep $DELAY
-            fi
+            echo "Not available yet (HTTP $HTTP_CODE), waiting ${DELAY}s..."
+            sleep $DELAY
           done
 
-          echo "⚠️ Timeout waiting for publication. Last state: $STATE"
-          echo "Check status manually at: https://central.sonatype.com/publishing/deployments"
+          echo "Timeout waiting for publication"
+          echo "Check: https://central.sonatype.com/publishing/deployments"
           exit 1
