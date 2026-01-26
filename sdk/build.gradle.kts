@@ -90,6 +90,11 @@ java {
     withSourcesJar()
 }
 
+tasks.withType<Javadoc> {
+    // Suppress warnings for generated protobuf code
+    (options as StandardJavadocDocletOptions).addStringOption("Xdoclint:none", "-quiet")
+}
+
 publishing {
     publications {
         create<MavenPublication>("mavenJava") {
