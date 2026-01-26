@@ -28,8 +28,8 @@ subprojects {
 
 jreleaser {
     project {
-        name.set("provider-sdk-java")
-        description.set("Java SDK for T-0 Network providers")
+        name.set("provider-java")
+        description.set("Java SDK and CLI for T-0 Network providers")
         copyright.set("T-0 Network")
     }
     release {
