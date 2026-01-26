@@ -121,5 +121,5 @@ jobs:
       - name: Commit next development version
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
-          commit_message: "chore: prepare for next development iteration (${{ steps.version.outputs.next_version }}) [skip ci]"
+          commit_message: "Prepare for next development iteration (${{ steps.version.outputs.next_version }}) [skip ci]"
           file_pattern: gradle.properties
