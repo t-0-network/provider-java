@@ -108,15 +108,12 @@ jobs:
           cat changelog.txt
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: elgohr/Github-Release-Action@v5
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ steps.version.outputs.release_version }}
-          name: ${{ steps.version.outputs.release_version }}
-          body_path: changelog.txt
-          files: |
-            sdk/build/libs/provider-sdk-java-${{ steps.version.outputs.release_version }}.jar
-            cli/build/libs/provider-init-${{ steps.version.outputs.release_version }}.jar
-          token: ${{ steps.app-token.outputs.token }}
+          title: ${{ steps.version.outputs.release_version }}
+          tag: ${{ steps.version.outputs.release_version }}
 
       - name: Update to next development version
         run: |
