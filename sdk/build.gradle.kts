@@ -1,8 +1,6 @@
-import com.google.protobuf.gradle.*
-
 plugins {
     `java-library`
-    id("com.google.protobuf") version "0.9.6"
+    id("build.buf") version "0.10.3"
     id("me.champeau.jmh") version "0.7.3"
     `maven-publish`
     signing
@@ -42,39 +40,34 @@ dependencies {
     testRuntimeOnly("ch.qos.logback:logback-classic:1.5.25")
 }
 
-protobuf {
-    protoc {
-        artifact = "com.google.protobuf:protoc:$protobufVersion"
+// Disable buf format and lint checks - proto files are synced from backend and should not be modified
+buf {
+    enforceFormat = false
+}
+
+tasks.configureEach {
+    if (name == "bufLint") {
+        enabled = false
     }
-    plugins {
-        id("grpc") {
-            artifact = "io.grpc:protoc-gen-grpc-java:$grpcVersion"
-        }
-    }
-    generateProtoTasks {
-        all().forEach { task ->
-            task.plugins {
-                id("grpc")
-            }
-        }
-    }
+}
+
+// Buf code generation - integrate generated sources into the build
+tasks.named("compileJava").configure {
+    dependsOn("bufGenerate")
+}
+
+tasks.withType<Jar>().configureEach {
+    dependsOn("bufGenerate")
 }
 
 sourceSets {
     main {
-        proto {
-            srcDir("src/main/proto")
+        java {
+            srcDir("${layout.buildDirectory.get().asFile}/bufbuild/generated/gen/java")
         }
     }
 }
 
-// Don't include proto source files in the JAR - only compiled classes are needed
-tasks.named<ProcessResources>("processResources") {
-    // The protobuf plugin adds proto files to resources for reflection support.
-    // This causes duplicates when proto srcDir overlaps with resources.
-    // Exclude proto files since we only need the compiled Java classes.
-    exclude("**/*.proto")
-}
 
 // JMH benchmark configuration
 jmh {
