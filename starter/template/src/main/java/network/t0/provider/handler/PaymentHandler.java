@@ -1,6 +1,7 @@
 package network.t0.provider.handler;
 
 import io.grpc.stub.StreamObserver;
+import network.t0.sdk.proto.tzero.v1.common.PaymentReceipt;
 import network.t0.sdk.proto.tzero.v1.payment.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,9 +56,8 @@ public class PaymentHandler extends ProviderServiceGrpc.ProviderServiceImplBase 
     // TODO: Step 2.4 implement how you do payouts (payments initiated by your counterparts)
     @Override
     public void payOut(PayoutRequest request, StreamObserver<PayoutResponse> responseObserver) {
-        log.info("Received payOut request: payment_id={}, payout_id={}, currency={}, amount={}",
+        log.info("Received payOut request: payment_id={}, currency={}, amount={}",
                 request.getPaymentId(),
-                request.getPayoutId(),
                 request.getCurrency(),
                 request.getAmount());
 
@@ -72,8 +72,24 @@ public class PaymentHandler extends ProviderServiceGrpc.ProviderServiceImplBase 
                 .build());
         responseObserver.onCompleted();
 
-        // TODO: confirmPayout should be called when your system notifies that payout has been made successfully
-        // Use networkClient.confirmPayout() to notify the network when the payout is complete
+        // TODO: finalizePayout should be called when your system completes (or fails) the payout
+        new Thread(() -> {
+            try {
+                Thread.sleep(2000);
+                networkClient.finalizePayout(FinalizePayoutRequest.newBuilder()
+                        .setPaymentId(request.getPaymentId())
+                        .setSuccess(FinalizePayoutRequest.Success.newBuilder()
+                                .setReceipt(PaymentReceipt.newBuilder()
+                                        .setSepa(PaymentReceipt.Sepa.newBuilder()
+                                                .setBankingTransactionReferenceId("1234567890")
+                                                .build())
+                                        .build())
+                                .build())
+                        .build());
+            } catch (Exception e) {
+                log.error("Failed to finalize payout for payment {}", request.getPaymentId(), e);
+            }
+        }).start();
     }
 
     @Override

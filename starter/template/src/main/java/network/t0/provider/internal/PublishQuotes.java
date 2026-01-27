@@ -47,26 +47,6 @@ public class PublishQuotes {
             // Otherwise, if you send multiple requests, only the quotes from the last one will be available.
 
             networkClient.updateQuote(UpdateQuoteRequest.newBuilder()
-                    // The quote at which you want to take USDT and pay out local currency (off-ramp)
-                    .addPayOut(UpdateQuoteRequest.Quote.newBuilder()
-                            .setCurrency(currency)
-                            .setQuoteType(QuoteType.QUOTE_TYPE_REALTIME) // REALTIME is only supported right now
-                            .setPaymentMethod(paymentMethod)
-                            .setExpiration(expiration)
-                            .setTimestamp(timestamp)
-                            .addBands(UpdateQuoteRequest.Quote.Band.newBuilder()
-                                    .setClientQuoteId(UUID.randomUUID().toString())
-                                    .setMaxAmount(Decimal.newBuilder()
-                                            .setUnscaled(1000) // maximum amount in USD, could be 1000, 5000, 10000 or 25000
-                                            .setExponent(0)
-                                            .build())
-                                    // note that rate is always USD/XXX, so that for EUR quote should be USD/EUR
-                                    .setRate(Decimal.newBuilder()
-                                            .setUnscaled(86) // rate 0.86
-                                            .setExponent(-2)
-                                            .build())
-                                    .build())
-                            .build())
                     // The quote at which you want to take local currency and settle with USDT (on-ramp)
                     .addPayIn(UpdateQuoteRequest.Quote.newBuilder()
                             .setCurrency(currency)
@@ -77,13 +57,33 @@ public class PublishQuotes {
                             .addBands(UpdateQuoteRequest.Quote.Band.newBuilder()
                                     .setClientQuoteId(UUID.randomUUID().toString())
                                     .setMaxAmount(Decimal.newBuilder()
-                                            .setUnscaled(1000) // maximum amount in USD, could be 1000, 5000, 10000 or 25000
+                                            .setUnscaled(25000) // maximum amount in USD, could be 1000, 5000, 10000 or 25000
                                             .setExponent(0)
                                             .build())
                                     // note that rate is always USD/XXX, so that for EUR quote should be USD/EUR
                                     .setRate(Decimal.newBuilder()
-                                            .setUnscaled(88) // rate 0.88
-                                            .setExponent(-2)
+                                            .setUnscaled(863) // rate 0.863
+                                            .setExponent(-3)
+                                            .build())
+                                    .build())
+                            .build())
+                    // The quote at which you want to take USDT and pay out local currency (off-ramp)
+                    .addPayOut(UpdateQuoteRequest.Quote.newBuilder()
+                            .setCurrency(currency)
+                            .setQuoteType(QuoteType.QUOTE_TYPE_REALTIME) // REALTIME is only supported right now
+                            .setPaymentMethod(paymentMethod)
+                            .setExpiration(expiration)
+                            .setTimestamp(timestamp)
+                            .addBands(UpdateQuoteRequest.Quote.Band.newBuilder()
+                                    .setClientQuoteId(UUID.randomUUID().toString())
+                                    .setMaxAmount(Decimal.newBuilder()
+                                            .setUnscaled(25000) // maximum amount in USD, could be 1000, 5000, 10000 or 25000
+                                            .setExponent(0)
+                                            .build())
+                                    // note that rate is always USD/XXX, so that for EUR quote should be USD/EUR
+                                    .setRate(Decimal.newBuilder()
+                                            .setUnscaled(873) // rate 0.873
+                                            .setExponent(-3)
                                             .build())
                                     .build())
                             .build())

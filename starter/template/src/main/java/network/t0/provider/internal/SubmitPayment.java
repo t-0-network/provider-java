@@ -2,7 +2,6 @@ package network.t0.provider.internal;
 
 import network.t0.sdk.proto.tzero.v1.common.Decimal;
 import network.t0.sdk.proto.tzero.v1.common.PaymentDetails;
-import network.t0.sdk.proto.tzero.v1.common.PaymentMethodType;
 import network.t0.sdk.proto.tzero.v1.payment.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,33 +32,26 @@ public class SubmitPayment {
             CreatePaymentResponse response = networkClient.createPayment(CreatePaymentRequest.newBuilder()
                     .setPaymentClientId(paymentClientId)
                     .setAmount(PaymentAmount.newBuilder()
-                            .setPayInAmount(Decimal.newBuilder()
-                                    .setUnscaled(100) // 100 EUR
+                            .setPayOutAmount(Decimal.newBuilder()
+                                    .setUnscaled(10) // 10 GBP
                                     .setExponent(0)
                                     .build())
                             .build())
-                    .setPayIn(CreatePaymentRequest.PayIn.newBuilder()
-                            .setCurrency("EUR")
-                            .setPaymentMethod(PaymentMethodType.PAYMENT_METHOD_TYPE_SEPA)
-                            .build())
-                    .setPayOut(CreatePaymentRequest.PayOut.newBuilder()
-                            .setCurrency("BRL")
-                            .setPaymentDetails(PaymentDetails.newBuilder()
-                                    .setPix(PaymentDetails.Pix.newBuilder()
-                                            .setKeyType(PaymentDetails.Pix.KeyType.KEY_TYPE_CPF)
-                                            .setKeyValue("12345678901")
-                                            .setBeneficiaryName("Test Beneficiary")
-                                            .build())
+                    .setCurrency("GBP")
+                    .setPaymentDetails(PaymentDetails.newBuilder()
+                            .setSepa(PaymentDetails.Sepa.newBuilder()
+                                    .setIban("GB12345567890")
+                                    .setBeneficiaryName("Max Mustermann")
                                     .build())
                             .build())
                     .build());
 
-            if (response.hasSuccess()) {
-                CreatePaymentResponse.Success success = response.getSuccess();
+            if (response.hasAccepted()) {
+                CreatePaymentResponse.Accepted accepted = response.getAccepted();
                 log.info("✅ Step 2.3: Payment submitted successfully!");
-                log.info("Payment ID: {}", success.getPaymentId());
-                log.info("Pay-in amount: {}", success.getPayInAmount());
-                log.info("Settlement amount: {}", success.getSettlementAmount());
+                log.info("Payment ID: {}", accepted.getPaymentId());
+                log.info("Payout amount: {}", accepted.getPayoutAmount());
+                log.info("Settlement amount: {}", accepted.getSettlementAmount());
             } else if (response.hasFailure()) {
                 CreatePaymentResponse.Failure failure = response.getFailure();
                 log.warn("Payment submission failed: {}", failure.getReason());
