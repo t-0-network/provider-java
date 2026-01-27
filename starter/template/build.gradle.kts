@@ -52,6 +52,7 @@ java {
 
 application {
     mainClass.set("network.t0.provider.Main")
+    applicationName = "provider"
 }
 
 tasks.withType<JavaCompile> {
