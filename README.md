@@ -37,6 +37,7 @@ java -jar provider-init.jar [OPTIONS] [PROJECT_NAME]
 | Option | Description |
 |--------|-------------|
 | `-d, --directory` | Target directory (defaults to current directory) |
+| `-r, --repository` | SDK repository: `jitpack` (default) or `maven-central` |
 | `--no-git` | Skip git repository initialization |
 | `--no-color` | Disable colored output |
 | `-h, --help` | Show help message |
@@ -48,16 +49,23 @@ When running the CLI, you'll be prompted to choose the SDK repository:
 
 ```
 Select SDK repository:
-  1) Maven Central (recommended, stable releases)
-  2) JitPack (build from GitHub, pre-release access)
+  1) JitPack (default)
+  2) Maven Central
 
 Enter choice [1]:
 ```
 
 | Option | When to Use |
 |--------|-------------|
-| **Maven Central** (default) | Production use, stable releases |
-| **JitPack** | Pre-release testing, specific commits, branch builds |
+| **JitPack** (default) | Recommended — fast publication |
+| **Maven Central** | Alternative — publication can be slow |
+
+**SDK Dependency Coordinates:**
+
+| Repository | Artifact ID |
+|------------|-------------|
+| JitPack | `com.github.t-0-network:provider-java:<version>` |
+| Maven Central | `network.t-0:provider-sdk-java:<version>` |
 
 ### Manual Setup (Alternative)
 
@@ -312,23 +320,23 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.t-0.provider-sdk-java:sdk:v1.0.0")
+    implementation("com.github.t-0-network:provider-java:1.0.33")
 }
 ```
 
 **Using the CLI with JitPack:**
 
-Select option 2 when prompted for repository:
+Select option 1 (default) when prompted for repository:
 
 ```
 Select SDK repository:
-  1) Maven Central (recommended, stable releases)
-  2) JitPack (build from GitHub, pre-release access)
+  1) JitPack (default)
+  2) Maven Central
 
-Enter choice [1]: 2
+Enter choice [1]: 1
 ```
 
-**Build status:** https://jitpack.io/#t-0/provider-sdk-java
+**Build status:** https://jitpack.io/#t-0-network/provider-java
 
 ### Troubleshooting
 

@@ -52,6 +52,12 @@ public class InitCommand implements Callable<Integer> {
     )
     private boolean noColor;
 
+    @Option(
+        names = {"-r", "--repository"},
+        description = "SDK repository: jitpack (default) or maven-central"
+    )
+    private String repository;
+
     /**
      * CLI entry point.
      *
@@ -79,8 +85,19 @@ public class InitCommand implements Callable<Integer> {
                 return 1;
             }
 
-            // Prompt for repository choice
-            String repository = promptForRepository();
+            // Determine repository choice
+            String repo;
+            if (repository != null) {
+                String r = repository.trim().toLowerCase();
+                if (r.equals("jitpack") || r.equals("maven-central")) {
+                    repo = r;
+                } else {
+                    printError("Invalid repository '" + repository + "'. Use 'jitpack' or 'maven-central'.");
+                    return 1;
+                }
+            } else {
+                repo = promptForRepository();
+            }
 
             // Determine target directory
             Path targetDir = directory != null ? directory.resolve(projectName) : Path.of(projectName);
@@ -99,7 +116,7 @@ public class InitCommand implements Callable<Integer> {
             // Extract template files
             printInfo("Extracting template files...");
             TemplateExtractor extractor = new TemplateExtractor();
-            extractor.extractTo(targetDir, projectName, repository);
+            extractor.extractTo(targetDir, projectName, repo);
             printSuccess("Template files extracted");
 
             // Generate keypair
@@ -120,7 +137,7 @@ public class InitCommand implements Callable<Integer> {
             }
 
             // Print success message
-            printCompletionMessage(targetDir, keyPair.publicKeyHex(), repository);
+            printCompletionMessage(targetDir, keyPair.publicKeyHex(), repo);
 
             return 0;
 
@@ -142,8 +159,8 @@ public class InitCommand implements Callable<Integer> {
     private String promptForRepository() throws IOException {
         println("");
         println("Select SDK repository:");
-        println("  " + color(BLUE, "1)") + " JitPack (default, build from GitHub)");
-        println("  " + color(BLUE, "2)") + " Maven Central (stable releases)");
+        println("  " + color(BLUE, "1)") + " JitPack (default)");
+        println("  " + color(BLUE, "2)") + " Maven Central");
         println("");
         System.out.print("Enter choice [1]: ");
         System.out.flush();
