@@ -15,7 +15,7 @@ Java SDK for building provider integrations with the t-0 Network. This SDK provi
 Run the following command to create a new t-0 Network provider project:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/t-0/provider-sdk-java/master/init.sh | bash
+curl -fsSL -L https://github.com/t-0-network/provider-java/releases/latest/download/provider-init.jar -o provider-init.jar && java -jar provider-init.jar && rm provider-init.jar
 ```
 
 This will:
@@ -89,7 +89,7 @@ Configure your `.env` file with the following variables:
 | Variable | Description | Required | Default |
 |----------|-------------|----------|---------|
 | `PROVIDER_PRIVATE_KEY` | Your secp256k1 private key (64-char hex) | Yes | - |
-| `NETWORK_PUBLIC_KEY` | t-0 Network's public key (provided by t-0 team) | Yes | - |
+| `NETWORK_PUBLIC_KEY` | t-0 Network's public key | Yes | Pre-configured |
 | `TZERO_ENDPOINT` | t-0 Network API endpoint | No | `https://api-sandbox.t-0.network` |
 | `PORT` | Provider server port | No | `8080` |
 | `QUOTE_PUBLISHING_INTERVAL` | Quote publishing interval in milliseconds | No | `5000` |
@@ -204,13 +204,12 @@ This section is for SDK maintainers responsible for releases and infrastructure.
 ```
 provider-sdk-java/
 ├── sdk/                    # Core SDK library (published to Maven Central)
-├── cli/                    # Init CLI tool (published to Maven Central)
+├── cli/                    # Init CLI tool (published as GitHub Release asset)
 ├── starter/
 │   ├── template/           # Template for new projects (embedded in CLI)
 │   └── build.gradle.kts    # Starter module build
 ├── docs/
 │   └── starter-architecture.md  # How the starter system works
-├── init.sh                 # Bootstrap script (downloads CLI from Maven Central)
 ├── gradle.properties       # Version management
 └── build.gradle.kts        # Root build config
 ```
@@ -263,25 +262,27 @@ cd my-test-project && ./gradlew build
 
 ### Publishing
 
-The SDK publishes to two repositories:
-
-| Channel | Coordinates | Trigger |
-|---------|-------------|---------|
-| **Maven Central** | `network.t0:provider-sdk-java` | Git tag push (`v*`) |
-| **JitPack** | `com.github.t-0.provider-sdk-java:sdk` | Automatic on-demand |
+| Artifact | Channel | Trigger |
+|----------|---------|---------|
+| **SDK** (`network.t-0:provider-sdk-java`) | Maven Central | Git tag push |
+| **CLI** (`provider-init.jar`) | GitHub Releases | Git tag push |
+| **SDK** (alternative) | JitPack | Automatic on-demand |
 
 For complete setup instructions, see **[GitHub Setup Guide](docs/github-setup.md)**.
 
 #### Quick Release Process
 
 1. Run the **Release** workflow from GitHub Actions (manual dispatch)
-2. Enter version (e.g., `1.0.0`) and next version (e.g., `1.0.1-SNAPSHOT`)
+2. Select version bump type (patch/minor/major)
 3. The workflow will:
-   - Update version, commit, and tag
-   - Trigger publish workflow
-   - Update to next development version
+   - Calculate and set the release version
+   - Build, commit, tag, and create GitHub Release
+   - Update to next SNAPSHOT version
+4. The **Publish** workflow (triggered by tag) will:
+   - Publish SDK to Maven Central
+   - Upload `provider-init.jar` to the GitHub Release
 
-4. Verify on Maven Central (10-30 minutes): https://repo1.maven.org/maven2/network/t0/
+5. Verify on Maven Central (10-30 minutes): https://repo1.maven.org/maven2/network/t-0/
 
 #### Required GitHub Secrets
 

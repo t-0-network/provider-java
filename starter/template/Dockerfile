@@ -1,24 +1,24 @@
 # Build stage
-FROM gradle:8.5-jdk17 AS build
+FROM eclipse-temurin:17-jdk-alpine AS build
 
 WORKDIR /app
 
-# Copy gradle files first for better caching
-COPY build.gradle.kts settings.gradle.kts ./
+# Copy gradle wrapper and build files first for better caching
+COPY gradlew ./
 COPY gradle ./gradle
+COPY build.gradle.kts settings.gradle.kts ./
 
 # Download dependencies
-RUN gradle dependencies --no-daemon || true
+RUN ./gradlew dependencies --no-daemon || true
 
 # Copy source code
 COPY src ./src
-COPY libs ./libs
 
 # Build the application
-RUN gradle build --no-daemon -x test
+RUN ./gradlew build --no-daemon -x test
 
 # Runtime stage
-FROM eclipse-temurin:17-jre-jammy
+FROM eclipse-temurin:17-jre-alpine
 
 WORKDIR /app
 

@@ -30,7 +30,7 @@ dependencies {
         val sdkDependency = if (sdkRepository == "jitpack") {
             "com.github.t-0.provider-sdk-java:sdk:+"
         } else {
-            "network.t0:provider-sdk-java:+"
+            "network.t-0:provider-sdk-java:+"
         }
         implementation(sdkDependency)
     }

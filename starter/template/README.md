@@ -14,18 +14,12 @@ This is a starter template for building a provider integration with the T-0 Netw
    cp .env.example .env
    ```
 
-2. **Generate a keypair (if not already done):**
-   ```bash
-   ./gradlew generateKeys
-   ```
-
-3. **Update `.env` with your configuration:**
-   - `PROVIDER_PRIVATE_KEY` - Your provider's private key
-   - `NETWORK_PUBLIC_KEY` - T-0 Network's public key (get from T-0 team)
+2. **Update `.env` with your configuration:**
+   - `PROVIDER_PRIVATE_KEY` - Your provider's private key (generated during init)
    - `TZERO_ENDPOINT` - API endpoint (default: sandbox)
    - `PORT` - Port for your provider server
 
-4. **Run the application:**
+3. **Run the application:**
    ```bash
    ./gradlew run
    ```
@@ -105,6 +99,5 @@ Run unit tests:
 ## Support
 
 Contact the T-0 team for:
-- Network public key
 - Sandbox credentials
 - Integration support
