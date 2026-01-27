@@ -95,11 +95,6 @@ public final class TemplateExtractor {
             throws IOException {
         String fileName = source.getFileName().toString();
 
-        // Skip .env.example - we'll create .env directly
-        if (fileName.equals(".env.example")) {
-            return;
-        }
-
         // Create parent directories
         Files.createDirectories(target.getParent());
 

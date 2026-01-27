@@ -83,8 +83,8 @@ jobs:
           cp cli/build/libs/provider-init-${VERSION}.jar cli/build/libs/provider-init.jar
           gh release upload "${VERSION}" cli/build/libs/provider-init.jar --clobber
 
-  verify:
-    name: Verify Publication
+  verify-maven-central:
+    name: Verify Maven Central Publication
     needs: publish
     runs-on: blacksmith-2vcpu-ubuntu-2404
 
@@ -115,5 +115,38 @@ jobs:
 
           echo "Timeout waiting for publication"
           echo "Check: https://central.sonatype.com/publishing/deployments"
+          exit 1
+
+  verify-jitpack:
+    name: Verify JitPack Publication
+    needs: publish
+    runs-on: blacksmith-2vcpu-ubuntu-2404
+
+    steps:
+      - name: Wait for JitPack availability
+        env:
+          VERSION: ${{ needs.publish.outputs.version }}
+        run: |
+          echo "Checking JitPack for version: $VERSION"
+
+          MAX_ATTEMPTS=30
+          DELAY=20
+          URL="https://jitpack.io/com/github/t-0-network/provider-java/provider-sdk-java/${VERSION}/provider-sdk-java-${VERSION}.pom"
+
+          for i in $(seq 1 $MAX_ATTEMPTS); do
+            echo "Attempt $i/$MAX_ATTEMPTS - checking $URL"
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
+
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "JitPack artifact verified!"
+              exit 0
+            fi
+
+            echo "Not available yet (HTTP $HTTP_CODE), waiting ${DELAY}s..."
+            sleep $DELAY
+          done
+
+          echo "Timeout waiting for JitPack"
+          echo "Check: https://jitpack.io/#t-0-network/provider-java/${VERSION}"
           exit 1
 
