@@ -8,8 +8,8 @@ The SDK uses two publishing channels:
 
 | Channel | Purpose | Trigger |
 |---------|---------|---------|
-| **Maven Central** | Primary distribution for production releases | Git tag push (`v*`) |
-| **JitPack** | Alternative for pre-release access, branch builds | Automatic on-demand |
+| **Maven Central** | Production releases (can be slow to propagate) | Git tag push |
+| **JitPack** | Default — fast, builds on demand from GitHub | Automatic on-demand |
 
 ## Required GitHub Secrets
 
@@ -179,16 +179,18 @@ before_install:
   - chmod +x gradlew
 
 install:
-  - ./gradlew :sdk:publishToMavenLocal :cli:publishToMavenLocal --no-daemon
+  - ./gradlew :sdk:publishToMavenLocal --no-daemon
 
 env:
   GRADLE_OPTS: "-Dorg.gradle.daemon=false"
 ```
 
+> **Note:** Only the SDK is published via JitPack. The CLI is distributed as a GitHub Release asset.
+
 ### Verify JitPack
 
 1. Push a tag or commit to GitHub
-2. Visit https://jitpack.io/#t-0/provider-sdk-java
+2. Visit https://jitpack.io/#t-0-network/provider-java
 3. Click "Get it" on your version to trigger a build
 4. Check the build log for any issues
 
@@ -196,13 +198,14 @@ env:
 
 | Module | JitPack Coordinates |
 |--------|---------------------|
-| SDK | `com.github.t-0.provider-sdk-java:sdk:TAG` |
-| CLI | `com.github.t-0.provider-sdk-java:cli:TAG` |
+| SDK | `com.github.t-0-network:provider-java:TAG` |
 
 Where `TAG` can be:
-- Release tag: `v1.0.0`
+- Release tag: `1.0.33` (no `v` prefix — tags are bare version numbers)
 - Branch: `master-SNAPSHOT`
 - Commit hash: `abc1234`
+
+> **Note:** The CLI is not published to JitPack. It is distributed as a GitHub Release asset.
 
 ## Complete Setup Checklist
 
@@ -226,7 +229,7 @@ Where `TAG` can be:
 ### Verification
 
 - [ ] Trigger a test release to staging (don't release)
-- [ ] Verify JitPack can build: https://jitpack.io/#t-0/provider-sdk-java
+- [ ] Verify JitPack can build: https://jitpack.io/#t-0-network/provider-java
 - [ ] Test CLI generates projects with both repository options
 
 ## Workflow Reference
@@ -235,7 +238,7 @@ Where `TAG` can be:
 |----------|------|---------|---------|
 | CI | `.github/workflows/ci.yaml` | Push to master, PRs | Build and test |
 | Release | `.github/workflows/release.yaml` | Manual dispatch | Create release, tag, update versions |
-| Publish | `.github/workflows/publish.yaml` | Tag push (`v*`) | Publish to Maven Central |
+| Publish | `.github/workflows/publish.yaml` | Tag push | Publish to Maven Central, upload CLI to GitHub Release |
 
 ### Release Process Flow
 
@@ -283,7 +286,7 @@ refusing to allow a GitHub App to create or update workflow
 
 ### JitPack Build Fails
 
-Check the build log at: `https://jitpack.io/#t-0/provider-sdk-java/TAG`
+Check the build log at: `https://jitpack.io/#t-0-network/provider-java/TAG`
 
 Common issues:
 - Missing `chmod +x gradlew` in `jitpack.yml`

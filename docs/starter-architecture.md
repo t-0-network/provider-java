@@ -7,32 +7,14 @@ This document describes how the project initialization system works for the T-0 
 The starter system provides a one-liner experience for developers to bootstrap new provider projects:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/t-0/provider-sdk-java/master/init.sh | bash
+curl -fsSL -L https://github.com/t-0-network/provider-java/releases/latest/download/provider-init.jar -o provider-init.jar && java -jar provider-init.jar && rm provider-init.jar
 ```
 
 ## Components
 
-### 1. Bootstrap Script (`init.sh`)
+### 1. CLI Module (`cli/`)
 
-The entry point shell script that users execute via curl. It:
-
-1. Checks prerequisites (Java 17+)
-2. Downloads the CLI JAR from Maven Central
-3. Executes the CLI with passed arguments
-4. Cleans up the temporary JAR
-
-**Version Selection:**
-```bash
-# Use default version
-curl -fsSL .../init.sh | bash
-
-# Use specific version
-T0_SDK_VERSION=1.2.0 curl -fsSL .../init.sh | bash
-```
-
-### 2. CLI Module (`cli/`)
-
-A self-contained Java CLI tool published to Maven Central as `network.t0:provider-init`.
+A self-contained Java CLI tool distributed as a GitHub Release asset (`provider-init.jar`).
 
 **Structure:**
 ```
@@ -51,7 +33,7 @@ cli/
 - **Embedded Template**: Template files are packaged as JAR resources
 - **Placeholder Substitution**: `${PROJECT_NAME}` and `${SDK_VERSION}` replaced during extraction
 
-### 3. Template Source (`starter/template/`)
+### 2. Template Source (`starter/template/`)
 
 The template project that gets extracted for new providers. Contains:
 
@@ -64,7 +46,7 @@ The template project that gets extracted for new providers. Contains:
 2. Development/testing of template changes
 3. Documentation reference
 
-### 4. Starter Build (`starter/build.gradle.kts`)
+### 3. Starter Build (`starter/build.gradle.kts`)
 
 A Gradle build file for the starter module that provides:
 - `generateKeys` task for local development
@@ -114,16 +96,7 @@ tasks.shadowJar {
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                         User runs curl                          │
-└─────────────────────────────────────────────────────────────────┘
-                                │
-                                ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                    init.sh (bootstrap script)                    │
-│  1. Check Java version                                          │
-│  2. Download provider-init-{version}.jar from Maven Central     │
-│  3. Execute: java -jar provider-init.jar [args]                 │
-│  4. Cleanup temp JAR                                            │
+│          User downloads and runs provider-init.jar              │
 └─────────────────────────────────────────────────────────────────┘
                                 │
                                 ▼
@@ -199,15 +172,21 @@ Template files with these extensions are processed for placeholders:
 
 ## Generated Project
 
-The generated project uses the SDK from Maven Central:
+The generated project uses the SDK from JitPack (default) or Maven Central:
 
 ```kotlin
-// build.gradle.kts (generated)
+// build.gradle.kts (generated) — JitPack example
 dependencies {
-    implementation("network.t0:provider-sdk-java:1.0.0")
-    // ...
+    implementation("com.github.t-0-network:provider-java:1.0.33")
+}
+
+// Maven Central example
+dependencies {
+    implementation("network.t-0:provider-sdk-java:1.0.33")
 }
 ```
+
+The `sdkRepository` variable in `build.gradle.kts` controls which repository is used. The CLI sets this based on the user's choice (`-r` flag or interactive prompt).
 
 This means:
 - No local `libs/sdk.jar` in generated projects
