@@ -1,9 +1,6 @@
 plugins {
     application
     id("com.gradleup.shadow") version "9.3.1"
-    `maven-publish`
-    signing
-    id("com.gradleup.nmcp")
 }
 
 val picocliVersion = "4.7.7"
@@ -77,71 +74,3 @@ tasks.build {
     dependsOn(tasks.shadowJar)
 }
 
-// Publishing configuration
-java {
-    withJavadocJar()
-    withSourcesJar()
-}
-
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            artifactId = "provider-init"
-
-            // Use shadow JAR as the main artifact
-            artifact(tasks.shadowJar)
-            artifact(tasks.named("sourcesJar"))
-            artifact(tasks.named("javadocJar"))
-
-            pom {
-                name.set("T-0 Provider Init CLI")
-                description.set("CLI tool to initialize new T-0 Network provider projects")
-                url.set("https://github.com/t-0/provider-sdk-java")
-
-                licenses {
-                    license {
-                        name.set("MIT License")
-                        url.set("https://opensource.org/licenses/MIT")
-                    }
-                }
-
-                developers {
-                    developer {
-                        id.set("t-0")
-                        name.set("T-0 Network")
-                        email.set("dev@t-0.network")
-                    }
-                }
-
-                scm {
-                    connection.set("scm:git:git://github.com/t-0/provider-sdk-java.git")
-                    developerConnection.set("scm:git:ssh://github.com/t-0/provider-sdk-java.git")
-                    url.set("https://github.com/t-0/provider-sdk-java")
-                }
-            }
-        }
-    }
-
-    // Staging repository for JReleaser (disabled - using NMCP)
-    // Uncomment if switching back to JReleaser
-    /*
-    repositories {
-        maven {
-            name = "staging"
-            url = uri(layout.buildDirectory.dir("staging-deploy"))
-        }
-    }
-    */
-}
-
-signing {
-    // Try env var first, then file
-    val keyFile = rootProject.file(".signing-key.gpg")
-    val signingKey: String? = System.getenv("GPG_PRIVATE_KEY")
-        ?: if (keyFile.exists()) keyFile.readText() else null
-
-    if (signingKey != null) {
-        useInMemoryPgpKeys(signingKey, "")
-        sign(publishing.publications["maven"])
-    }
-}

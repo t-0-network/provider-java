@@ -43,7 +43,6 @@ nmcpAggregation {
 
 dependencies {
     nmcpAggregation(project(":sdk"))
-    nmcpAggregation(project(":cli"))
 }
 
 // ============================================================================
@@ -94,7 +93,6 @@ jreleaser {
                     sign = false
                     skipPublicationCheck = true
                     stagingRepository("sdk/build/staging-deploy")
-                    stagingRepository("cli/build/staging-deploy")
                 }
             }
         }

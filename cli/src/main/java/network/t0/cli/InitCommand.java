@@ -52,6 +52,11 @@ public class InitCommand implements Callable<Integer> {
     )
     private boolean noColor;
 
+    /**
+     * CLI entry point.
+     *
+     * @param args command line arguments
+     */
     public static void main(String[] args) {
         int exitCode = new CommandLine(new InitCommand()).execute(args);
         System.exit(exitCode);

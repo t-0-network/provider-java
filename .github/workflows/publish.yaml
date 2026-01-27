@@ -10,7 +10,7 @@ jobs:
     name: Build and Upload to Maven Central
     runs-on: blacksmith-4vcpu-ubuntu-2404
     permissions:
-      contents: 'read'
+      contents: 'write'
       id-token: 'write'
     outputs:
       version: ${{ steps.version.outputs.version }}
@@ -55,7 +55,7 @@ jobs:
         run: ./gradlew build --no-daemon
 
       # === NMCP Publishing (active) ===
-      - name: Publish to Maven Central
+      - name: Publish SDK to Maven Central
         run: ./gradlew publishAggregationToCentralPortal --no-daemon
         env:
           GPG_PRIVATE_KEY: ${{ steps.secrets.outputs.gpg_key }}
@@ -64,7 +64,7 @@ jobs:
 
       # === JReleaser Publishing (disabled - uncomment to re-enable) ===
       # - name: Stage artifacts
-      #   run: ./gradlew :sdk:publishMavenJavaPublicationToStagingRepository :cli:publishMavenPublicationToStagingRepository --no-daemon
+      #   run: ./gradlew :sdk:publishMavenJavaPublicationToStagingRepository --no-daemon
       #   env:
       #     GPG_PRIVATE_KEY: ${{ steps.secrets.outputs.gpg_key }}
       #
@@ -74,6 +74,14 @@ jobs:
       #     JRELEASER_MAVENCENTRAL_USERNAME: ${{ secrets.OSSRH_USERNAME }}
       #     JRELEASER_MAVENCENTRAL_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
       #     JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload provider-init.jar to GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          cp cli/build/libs/provider-init-${VERSION}.jar cli/build/libs/provider-init.jar
+          gh release upload "${VERSION}" cli/build/libs/provider-init.jar --clobber
 
   verify:
     name: Verify Publication
@@ -108,3 +116,4 @@ jobs:
           echo "Timeout waiting for publication"
           echo "Check: https://central.sonatype.com/publishing/deployments"
           exit 1
+
