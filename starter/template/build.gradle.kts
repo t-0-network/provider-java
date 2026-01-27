@@ -6,9 +6,8 @@ plugins {
 group = "network.t0"
 version = "1.0.0-SNAPSHOT"
 
-// SDK Repository configuration
-// Options: "maven-central" (default) or "jitpack"
-val sdkRepository = "maven-central"
+// SDK Repository: "jitpack" (default) or "maven-central"
+val sdkRepository = "jitpack"
 
 // Check if running as part of the parent multi-project build
 val isSubproject = rootProject.name == "provider-sdk-java"

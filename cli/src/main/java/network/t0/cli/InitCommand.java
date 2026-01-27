@@ -142,34 +142,36 @@ public class InitCommand implements Callable<Integer> {
     private String promptForRepository() throws IOException {
         println("");
         println("Select SDK repository:");
-        println("  " + color(BLUE, "1)") + " Maven Central (recommended, stable releases)");
-        println("  " + color(BLUE, "2)") + " JitPack (build from GitHub, pre-release access)");
+        println("  " + color(BLUE, "1)") + " JitPack (default, build from GitHub)");
+        println("  " + color(BLUE, "2)") + " Maven Central (stable releases)");
         println("");
         System.out.print("Enter choice [1]: ");
         System.out.flush();
 
         String input = readLine();
         if (input == null || input.trim().isEmpty() || input.trim().equals("1")) {
-            return "maven-central";
-        } else if (input.trim().equals("2")) {
             return "jitpack";
-        } else {
-            printError("Invalid choice. Using Maven Central.");
+        } else if (input.trim().equals("2")) {
             return "maven-central";
+        } else {
+            printError("Invalid choice. Using JitPack.");
+            return "jitpack";
         }
     }
 
+    private java.io.BufferedReader stdinReader;
+
     private String readLine() throws IOException {
-        // Read from console
         java.io.Console console = System.console();
         if (console != null) {
             return console.readLine();
         } else {
-            // Fallback for non-interactive environments
-            java.io.BufferedReader reader = new java.io.BufferedReader(
-                new java.io.InputStreamReader(System.in)
-            );
-            return reader.readLine();
+            if (stdinReader == null) {
+                stdinReader = new java.io.BufferedReader(
+                    new java.io.InputStreamReader(System.in)
+                );
+            }
+            return stdinReader.readLine();
         }
     }
 
@@ -246,9 +248,6 @@ public class InitCommand implements Callable<Integer> {
         println("");
         println(color(YELLOW, "SDK Repository:") + " " +
             (repository.equals("jitpack") ? "JitPack" : "Maven Central"));
-        if (repository.equals("jitpack")) {
-            println(color(YELLOW, "Note:") + " First build may take longer as JitPack builds the SDK on-demand.");
-        }
         println("");
         println(color(YELLOW, "Your public key (share with T-0 team):"));
         println(color(BLUE, "0x" + publicKey));

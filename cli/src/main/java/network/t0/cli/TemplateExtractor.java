@@ -19,7 +19,8 @@ public final class TemplateExtractor {
     // These match the real values in the template that get replaced during extraction
     private static final String SDK_VERSION_PLACEHOLDER = ":+\"";  // Matches ":+" at end of dependency version
     private static final String PROJECT_NAME_PLACEHOLDER = "my-provider";
-    private static final String SDK_REPOSITORY_PLACEHOLDER = "\"maven-central\"";
+    private static final String SDK_REPOSITORY_PATTERN = "val sdkRepository = \"jitpack\"";
+    private static final String SDK_REPOSITORY_MAVEN = "val sdkRepository = \"maven-central\"";
 
     /**
      * Extracts template files to the target directory.
@@ -103,8 +104,9 @@ public final class TemplateExtractor {
             // SDK version: replace ":+" with ":actualVersion" (keeping the quote)
             content = content.replace(SDK_VERSION_PLACEHOLDER, ":" + sdkVersion + "\"");
             content = content.replace(PROJECT_NAME_PLACEHOLDER, projectName);
-            // Repository: replace "maven-central" with the actual repository value
-            content = content.replace(SDK_REPOSITORY_PLACEHOLDER, "\"" + repository + "\"");
+            if ("maven-central".equals(repository)) {
+                content = content.replace(SDK_REPOSITORY_PATTERN, SDK_REPOSITORY_MAVEN);
+            }
 
             Files.writeString(target, content);
         } else {

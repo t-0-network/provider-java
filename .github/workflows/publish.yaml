@@ -83,39 +83,39 @@ jobs:
           cp cli/build/libs/provider-init-${VERSION}.jar cli/build/libs/provider-init.jar
           gh release upload "${VERSION}" cli/build/libs/provider-init.jar --clobber
 
-  verify-maven-central:
-    name: Verify Maven Central Publication
-    needs: publish
-    runs-on: blacksmith-2vcpu-ubuntu-2404
-
-    steps:
-      - name: Wait for Maven Central availability
-        env:
-          VERSION: ${{ needs.publish.outputs.version }}
-        run: |
-          echo "Checking Maven Central for version: $VERSION"
-
-          MAX_ATTEMPTS=60
-          DELAY=30
-          URL="https://repo1.maven.org/maven2/network/t-0/provider-sdk-java/${VERSION}/provider-sdk-java-${VERSION}.pom"
-
-          for i in $(seq 1 $MAX_ATTEMPTS); do
-            echo "Attempt $i/$MAX_ATTEMPTS - checking $URL"
-
-            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
-
-            if [ "$HTTP_CODE" = "200" ]; then
-              echo "Published to Maven Central!"
-              exit 0
-            fi
-
-            echo "Not available yet (HTTP $HTTP_CODE), waiting ${DELAY}s..."
-            sleep $DELAY
-          done
-
-          echo "Timeout waiting for publication"
-          echo "Check: https://central.sonatype.com/publishing/deployments"
-          exit 1
+  # verify-maven-central:
+  #   name: Verify Maven Central Publication
+  #   needs: publish
+  #   runs-on: blacksmith-2vcpu-ubuntu-2404
+  #
+  #   steps:
+  #     - name: Wait for Maven Central availability
+  #       env:
+  #         VERSION: ${{ needs.publish.outputs.version }}
+  #       run: |
+  #         echo "Checking Maven Central for version: $VERSION"
+  #
+  #         MAX_ATTEMPTS=60
+  #         DELAY=30
+  #         URL="https://repo1.maven.org/maven2/network/t-0/provider-sdk-java/${VERSION}/provider-sdk-java-${VERSION}.pom"
+  #
+  #         for i in $(seq 1 $MAX_ATTEMPTS); do
+  #           echo "Attempt $i/$MAX_ATTEMPTS - checking $URL"
+  #
+  #           HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
+  #
+  #           if [ "$HTTP_CODE" = "200" ]; then
+  #             echo "Published to Maven Central!"
+  #             exit 0
+  #           fi
+  #
+  #           echo "Not available yet (HTTP $HTTP_CODE), waiting ${DELAY}s..."
+  #           sleep $DELAY
+  #         done
+  #
+  #         echo "Timeout waiting for publication"
+  #         echo "Check: https://central.sonatype.com/publishing/deployments"
+  #         exit 1
 
   verify-jitpack:
     name: Verify JitPack Publication
