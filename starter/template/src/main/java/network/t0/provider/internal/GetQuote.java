@@ -23,14 +23,12 @@ public class GetQuote {
     public static void fetch(NetworkServiceGrpc.NetworkServiceBlockingStub networkClient) {
         try {
             GetQuoteResponse response = networkClient.getQuote(GetQuoteRequest.newBuilder()
-                    .setPayInCurrency("EUR")
-                    .setPayInMethod(PaymentMethodType.PAYMENT_METHOD_TYPE_SEPA)
-                    .setPayOutCurrency("BRL")
-                    .setPayOutMethod(PaymentMethodType.PAYMENT_METHOD_TYPE_PIX)
+                    .setPayOutCurrency("GBP")
+                    .setPayOutMethod(PaymentMethodType.PAYMENT_METHOD_TYPE_SEPA)
                     .setQuoteType(QuoteType.QUOTE_TYPE_REALTIME)
                     .setAmount(PaymentAmount.newBuilder()
-                            .setPayInAmount(Decimal.newBuilder()
-                                    .setUnscaled(100)
+                            .setPayOutAmount(Decimal.newBuilder()
+                                    .setUnscaled(50)
                                     .setExponent(0)
                                     .build())
                             .build())
