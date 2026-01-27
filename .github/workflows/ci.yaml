@@ -14,6 +14,7 @@ jobs:
   build:
     name: Build and Test
     runs-on: blacksmith-4vcpu-ubuntu-2404
+    if: ${{ !startsWith(github.event.head_commit.message, 'Release ') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6

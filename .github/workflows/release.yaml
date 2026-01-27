@@ -89,7 +89,7 @@ jobs:
       - name: Commit release version
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
-          commit_message: "Release ${{ steps.version.outputs.release_version }} [skip ci]"
+          commit_message: "Release ${{ steps.version.outputs.release_version }}"
           file_pattern: gradle.properties
           tagging_message: "${{ steps.version.outputs.release_version }}"
 
