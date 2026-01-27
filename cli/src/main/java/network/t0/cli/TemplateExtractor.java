@@ -33,10 +33,7 @@ public final class TemplateExtractor {
         String sdkVersion = Version.get();
 
         // Format version for the target repository
-        // JitPack uses git tags with 'v' prefix, Maven Central uses plain version
-        String formattedVersion = repository.equals("jitpack")
-            ? "v" + sdkVersion
-            : sdkVersion;
+        String formattedVersion = sdkVersion;
 
         URI resourceUri;
         try {

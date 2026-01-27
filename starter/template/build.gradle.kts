@@ -28,7 +28,7 @@ dependencies {
     } else {
         // Use Maven Central / JitPack when running standalone
         val sdkDependency = if (sdkRepository == "jitpack") {
-            "com.github.t-0.provider-sdk-java:sdk:+"
+            "com.github.t-0-network:provider-java:+"
         } else {
             "network.t-0:provider-sdk-java:+"
         }

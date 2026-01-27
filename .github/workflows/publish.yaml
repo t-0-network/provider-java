@@ -131,7 +131,7 @@ jobs:
 
           MAX_ATTEMPTS=30
           DELAY=20
-          URL="https://jitpack.io/com/github/t-0-network/provider-java/provider-sdk-java/${VERSION}/provider-sdk-java-${VERSION}.pom"
+          URL="https://jitpack.io/com/github/t-0-network/provider-java/${VERSION}/provider-java-${VERSION}.pom"
 
           for i in $(seq 1 $MAX_ATTEMPTS); do
             echo "Attempt $i/$MAX_ATTEMPTS - checking $URL"
