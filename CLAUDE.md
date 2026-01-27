@@ -74,7 +74,7 @@ provider-sdk-java/
 curl -fsSL -L https://github.com/t-0-network/provider-java/releases/latest/download/provider-init.jar -o provider-init.jar
 java -jar provider-init.jar [OPTIONS] [PROJECT_NAME]
 
-# Options: -r/--repository (jitpack|maven-central), -d/--directory, --no-git, --no-color
+# Options: -r/--repository (jitpack|maven-central), -d/--directory, --no-color
 ```
 
 - Interactive prompts for project name and repository if not provided via flags
