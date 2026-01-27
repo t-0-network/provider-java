@@ -6,7 +6,6 @@ Java SDK for building provider integrations with the t-0 Network. This SDK provi
 
 - **Java** 17 or later
 - **Gradle** 8.x (or use the included Gradle wrapper)
-- **Git** (for project initialization)
 
 ## Quick Start
 
@@ -24,7 +23,6 @@ This will:
 3. Download and set up the project template
 4. Generate a secp256k1 keypair for your provider
 5. Configure your environment
-6. Initialize a git repository
 
 ### CLI Options
 
@@ -38,7 +36,6 @@ java -jar provider-init.jar [OPTIONS] [PROJECT_NAME]
 |--------|-------------|
 | `-d, --directory` | Target directory (defaults to current directory) |
 | `-r, --repository` | SDK repository: `jitpack` (default) or `maven-central` |
-| `--no-git` | Skip git repository initialization |
 | `--no-color` | Disable colored output |
 | `-h, --help` | Show help message |
 | `-V, --version` | Show version information |
@@ -184,7 +181,7 @@ docker run -p 8080:8080 --env-file .env my-provider
 
 ## Security Considerations
 
-- **Never commit `.env`** - It's automatically added to `.gitignore`
+- **Never commit `.env`** - It's included in the generated `.gitignore`
 - **Keep your private key secure** - The `PROVIDER_PRIVATE_KEY` must remain confidential
 - **Share only your public key** - Only the public key should be shared with the t-0 team
 - **Use separate keys per environment** - Different keys for development, staging, and production
@@ -262,8 +259,7 @@ cd starter/template && ./gradlew build
 ./gradlew :cli:shadowJar
 
 # Test locally
-java -jar cli/build/libs/provider-init-*.jar my-test-project --no-git
-
+java -jar cli/build/libs/provider-init-*.jar my-test-project
 # Verify generated project
 cd my-test-project && ./gradlew build
 ```

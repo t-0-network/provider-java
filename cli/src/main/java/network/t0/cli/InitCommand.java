@@ -41,12 +41,6 @@ public class InitCommand implements Callable<Integer> {
     private Path directory;
 
     @Option(
-        names = {"--no-git"},
-        description = "Skip git repository initialization"
-    )
-    private boolean noGit;
-
-    @Option(
         names = {"--no-color"},
         description = "Disable colored output"
     )
@@ -129,13 +123,6 @@ public class InitCommand implements Callable<Integer> {
             EnvFileWriter.write(targetDir, keyPair);
             printSuccess("Environment configured");
 
-            // Initialize git repository
-            if (!noGit && isGitAvailable()) {
-                printInfo("Initializing git repository...");
-                initGitRepository(targetDir);
-                printSuccess("Git repository initialized");
-            }
-
             // Print success message
             printCompletionMessage(targetDir, keyPair.publicKeyHex(), repo);
 
@@ -199,52 +186,6 @@ public class InitCommand implements Callable<Integer> {
         return name.toLowerCase()
             .replaceAll("\\s+", "-")
             .replaceAll("[^a-z0-9-]", "");
-    }
-
-    private boolean isGitAvailable() {
-        try {
-            ProcessBuilder pb = new ProcessBuilder("git", "--version");
-            pb.redirectErrorStream(true);
-            Process process = pb.start();
-            int exitCode = process.waitFor();
-            return exitCode == 0;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    private void initGitRepository(Path targetDir) throws IOException, InterruptedException {
-        // git init
-        runCommand(targetDir, "git", "init", "--quiet");
-
-        // Ensure .env is in .gitignore
-        Path gitignore = targetDir.resolve(".gitignore");
-        if (!Files.exists(gitignore)) {
-            Files.writeString(gitignore, ".env\n");
-        } else {
-            String content = Files.readString(gitignore);
-            if (!content.contains(".env")) {
-                Files.writeString(gitignore, content + "\n.env\n");
-            }
-        }
-
-        // git add .
-        runCommand(targetDir, "git", "add", ".");
-
-        // git commit
-        runCommand(targetDir, "git", "commit", "--quiet", "-m",
-            "Initial commit from T-0 Network Provider SDK template");
-    }
-
-    private void runCommand(Path workDir, String... command) throws IOException, InterruptedException {
-        ProcessBuilder pb = new ProcessBuilder(command);
-        pb.directory(workDir.toFile());
-        pb.redirectErrorStream(true);
-        Process process = pb.start();
-        int exitCode = process.waitFor();
-        if (exitCode != 0) {
-            throw new IOException("Command failed: " + String.join(" ", command));
-        }
     }
 
     private void printHeader() {

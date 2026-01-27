@@ -139,14 +139,6 @@ tasks.shadowJar {
                                 │
                                 ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                   Git Initialization                             │
-│  1. git init                                                    │
-│  2. Add .env to .gitignore                                      │
-│  3. git add . && git commit                                     │
-└─────────────────────────────────────────────────────────────────┘
-                                │
-                                ▼
-┌─────────────────────────────────────────────────────────────────┐
 │                   Print Success Message                          │
 │  - Show project path                                            │
 │  - Display public key (for sharing with T-0 team)               │
@@ -212,7 +204,7 @@ jobs:
 
       # 4. E2E test: generate project and compile it
       - run: |
-          java -jar cli/build/libs/provider-init.jar test-project --no-git
+          java -jar cli/build/libs/provider-init.jar test-project
           cd test-project
           ./gradlew compileJava
 ```
@@ -225,7 +217,7 @@ jobs:
 2. Test locally:
    ```bash
    ./gradlew :cli:shadowJar
-   java -jar cli/build/libs/provider-init-*.jar test-project --no-git
+   java -jar cli/build/libs/provider-init-*.jar test-project
    cd test-project && ./gradlew build
    ```
 3. Commit changes
@@ -242,7 +234,7 @@ jobs:
 # Quick test
 ./gradlew :cli:shadowJar && \
   rm -rf /tmp/test-project && \
-  java -jar cli/build/libs/provider-init-*.jar /tmp/test-project --no-git && \
+  java -jar cli/build/libs/provider-init-*.jar /tmp/test-project && \
   cd /tmp/test-project && ./gradlew build
 ```
 
