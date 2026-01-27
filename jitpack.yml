@@ -9,7 +9,7 @@ before_install:
 
 install:
   # Build and publish to local maven repo for JitPack to pick up
-  - ./gradlew :sdk:publishToMavenLocal :cli:publishToMavenLocal --no-daemon
+  - ./gradlew :sdk:publishToMavenLocal --no-daemon
 
 env:
   GRADLE_OPTS: "-Dorg.gradle.daemon=false"

@@ -15,15 +15,15 @@ RUN ./gradlew dependencies --no-daemon || true
 COPY src ./src
 
 # Build the application
-RUN ./gradlew build --no-daemon -x test
+RUN ./gradlew installDist --no-daemon -x test
 
 # Runtime stage
 FROM eclipse-temurin:17-jre-noble
 
 WORKDIR /app
 
-# Copy the built application
-COPY --from=build /app/build/libs/*.jar app.jar
+# Copy the installed distribution (includes all dependencies)
+COPY --from=build /app/build/install/provider/ ./
 
 # Copy .env file if it exists (for local development)
 COPY .env* ./
@@ -32,4 +32,4 @@ COPY .env* ./
 EXPOSE 8080
 
 # Run the application
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["./bin/provider"]
