@@ -1,3 +1,13 @@
+# :warning: DEPRECATED
+
+> **This repository has been deprecated.** All development has moved to the unified Provider SDK monorepo.
+>
+> **Please use [t-0-network/provider-sdk](https://github.com/t-0-network/provider-sdk) instead.**
+>
+> This repository is no longer maintained and will be archived.
+
+---
+
 # t-0 Network Provider SDK - Java
 
 Java SDK for building provider integrations with the t-0 Network. This SDK provides a gRPC-based framework with automatic cryptographic signing and verification for secure cross-border payment network communication.
